@@ -8,7 +8,7 @@ let testUserId;
 
 beforeEach(async () => {
   //register a new user and save token and id before each test
-  testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
+  testUser.email = generateNewEmail() + '@test.com';
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
   testUserId = registerRes.body.user.id;
@@ -21,7 +21,7 @@ afterEach(async () => {
 });
 
 test('register', async () => {
-    const newUser = { name: 'new diner', email: Math.random().toString(36).substring(2, 12) + '@test.com', password: 'b' };
+    const newUser = { name: 'new diner', email: generateNewEmail() + '@test.com', password: 'b' };
     const registerTest = await request(app).post('/api/auth').send(newUser);
     expect(registerTest.status).toBe(200);
     expect(registerTest.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
@@ -50,7 +50,7 @@ test('update', async () => {
   console.log(testUserID);
   expect(testUserID).not.toBeNull();
 
-  const updatedUser = { ...testUser, password: 'c' };
+  const updatedUser = { ...testUser, email: generateNewEmail(), password: 'c' };
   const updateRes = await request(app).put(`/api/auth/${testUserID}`).auth(testUserAuthToken, { type: 'bearer' }).send(updatedUser);
   console.log("Updated User:", updatedUser);
   console.log('Update Response:', updateRes.body);  
@@ -59,12 +59,6 @@ test('update', async () => {
   console.log("User without password:", userWithoutPassword);
   console.log("Update Response Body:", updateRes.body);
   expect(updateRes.body).toMatchObject(userWithoutPassword);
-
-
-
-  
-
-
   // const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
   // expect(loginRes.body.user).toMatchObject(user);
 });
@@ -79,3 +73,7 @@ test('logout', async () => {
   expect(logout.body).toMatchObject({ message: 'logout successful' });
 
 });
+
+generateNewEmail = () => {  
+  return Math.random().toString(36).substring(2, 12) + '@test.com';
+}
