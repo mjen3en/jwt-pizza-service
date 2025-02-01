@@ -68,3 +68,14 @@ test('update', async () => {
   // const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
   // expect(loginRes.body.user).toMatchObject(user);
 });
+
+
+test('logout', async () => { 
+  const loginRes = await request(app).put('/api/auth').send(testUser);
+  testUserAuthToken = loginRes.body.token
+  console.log('Login Response:', loginRes.body.user);
+  const logout = await request(app).delete(`/api/auth/`).auth(testUserAuthToken, { type: 'bearer' });
+  expect(logout.status).toBe(200);
+  expect(logout.body).toMatchObject({ message: 'logout successful' });
+
+});
