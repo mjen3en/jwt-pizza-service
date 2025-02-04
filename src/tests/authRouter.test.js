@@ -1,10 +1,21 @@
 const request = require('supertest');
-const app = require('../service');
 const e = require('express');
+const testConfig = require('../test.config');
+const createApp  = require('../service');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
 let testUserId;
+let app;
+
+beforeAll(async () => {
+
+  if (!testConfig.db.connection.database){
+    testConfig.db.connection.database = randomName();
+  }
+  app = await createApp(testConfig);
+
+});
 
 beforeEach(async () => {
   //register a new user and save token and id before each test
@@ -76,4 +87,8 @@ test('logout', async () => {
 
 generateNewEmail = () => {  
   return Math.random().toString(36).substring(2, 12) + '@test.com';
+}
+
+function randomName() { 
+  return Math.random().toString(36).substring(2, 12);
 }

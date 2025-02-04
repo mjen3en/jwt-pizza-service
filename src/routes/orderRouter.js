@@ -1,8 +1,8 @@
 const express = require('express');
-const config = require('../config.js');
-const { Role, DB } = require('../database/database.js');
-const { authRouter } = require('./authRouter.js');
+const { Role } = require('../database/database.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
+
+function createOrderRouter(db, authRouter, config){
 
 const orderRouter = express.Router();
 
@@ -44,7 +44,7 @@ orderRouter.endpoints = [
 orderRouter.get(
   '/menu',
   asyncHandler(async (req, res) => {
-    res.send(await DB.getMenu());
+    res.send(await db.getMenu());
   })
 );
 
@@ -58,8 +58,8 @@ orderRouter.put(
     }
 
     const addMenuItemReq = req.body;
-    await DB.addMenuItem(addMenuItemReq);
-    res.send(await DB.getMenu());
+    await db.addMenuItem(addMenuItemReq);
+    res.send(await db.getMenu());
   })
 );
 
@@ -68,7 +68,7 @@ orderRouter.get(
   '/',
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
-    res.json(await DB.getOrders(req.user, req.query.page));
+    res.json(await db.getOrders(req.user, req.query.page));
   })
 );
 
@@ -78,7 +78,7 @@ orderRouter.post(
   authRouter.authenticateToken,
   asyncHandler(async (req, res) => {
     const orderReq = req.body;
-    const order = await DB.addDinerOrder(req.user, orderReq);
+    const order = await db.addDinerOrder(req.user, orderReq);
     const r = await fetch(`${config.factory.url}/api/order`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
@@ -93,4 +93,8 @@ orderRouter.post(
   })
 );
 
-module.exports = orderRouter;
+return {orderRouter};
+
+}
+
+module.exports = {createOrderRouter};
