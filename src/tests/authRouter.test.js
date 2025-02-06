@@ -33,7 +33,7 @@ test('register', async () => {
     const registerTest = await request(app).post('/api/auth').send(newUser);
     expect(registerTest.status).toBe(200);
     expect(registerTest.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
-    const { password, ...user } = { ...newUser, roles: [{ role: 'diner' }] };
+    const user  = { name: newUser.name, email: newUser.email, roles: [{ role: 'diner' }] };
     expect(registerTest.body.user).toMatchObject(user);
   });
 
@@ -46,7 +46,7 @@ test('login', async () => {
   expect(testUserAuthToken).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
   console.log(loginRes.body.user);
 
-  const { password: _, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
+  const user  = { name: testUser.name, email: testUser.email, roles: [{ role: 'diner' }] };
   expect(loginRes.body.user).toMatchObject(user);
 });
 
@@ -63,7 +63,7 @@ test('update', async () => {
   console.log("Updated User:", updatedUser);
   console.log('Update Response:', updateRes.body);  
   expect(updateRes.status).toBe(200);
-  const { password, ...userWithoutPassword } = updatedUser;
+  const userWithoutPassword  = { name: updatedUser.name, email: updatedUser.email, roles: [{ role: 'diner' }] };
   console.log("User without password:", userWithoutPassword);
   console.log("Update Response Body:", updateRes.body);
   expect(updateRes.body).toMatchObject(userWithoutPassword);

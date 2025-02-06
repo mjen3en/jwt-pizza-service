@@ -22,7 +22,6 @@ beforeAll(async () => {
     testAdmin = await createAdminUser(db);  
     const loginRes = await request(app).put('/api/auth').send(testAdmin);
     testAdminAuthToken = loginRes.body.token;
-    testAdminId = loginRes.body.user.id;
 
     const newMenuItem = { title:"test", description: "yummy", image:"pizza4.png", price: 0.0002 };
     itemRes = await request(app).put('/api/order/menu').auth(testAdminAuthToken, { type: 'bearer' }).send(newMenuItem);
