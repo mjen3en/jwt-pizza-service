@@ -1,11 +1,9 @@
 const request = require('supertest');
-const e = require('express');
 const testConfig = require('../test.config');
 const createApp  = require('../service');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
-let testUserId;
 let app;
 
 beforeAll(async () => {
@@ -22,7 +20,6 @@ beforeEach(async () => {
   testUser.email = generateNewEmail() + '@test.com';
   const registerRes = await request(app).post('/api/auth').send(testUser);
   testUserAuthToken = registerRes.body.token;
-  testUserId = registerRes.body.user.id;
 });
 
 afterEach(async () => {
@@ -70,8 +67,6 @@ test('update', async () => {
   console.log("User without password:", userWithoutPassword);
   console.log("Update Response Body:", updateRes.body);
   expect(updateRes.body).toMatchObject(userWithoutPassword);
-  // const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
-  // expect(loginRes.body.user).toMatchObject(user);
 });
 
 
@@ -85,7 +80,7 @@ test('logout', async () => {
 
 });
 
-generateNewEmail = () => {  
+const generateNewEmail = () => {  
   return Math.random().toString(36).substring(2, 12) + '@test.com';
 }
 

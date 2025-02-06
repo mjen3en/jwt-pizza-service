@@ -1,5 +1,4 @@
 const createApp = require('./service.js');
-const app = require('./service.js');
 const config = require('./config.js');
 
 

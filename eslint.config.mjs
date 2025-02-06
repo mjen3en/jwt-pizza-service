@@ -8,3 +8,9 @@ export default [
   {languageOptions: { globals: globals.node }},
   pluginJs.configs.recommended,
 ];
+
+module.exports = {
+  env: {
+    jest: true
+  }
+}
