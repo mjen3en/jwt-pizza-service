@@ -2,11 +2,17 @@ const request = require('supertest');
 const e = require('express');
 const testConfig = require('../test.config');
 const createApp  = require('../service');
+const { Role, DB } = require('../database/database.js');
 
 const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
-let testUserAuthToken;
-let testUserId;
 let app;
+let testAdmin;
+let testAdminAuthToken;
+let testAdminId;
+let db;
+let itemRes;
+let franchiseId;
+let newOrder;
 
 beforeAll(async () => {
 
@@ -14,6 +20,27 @@ beforeAll(async () => {
       testConfig.db.connection.database = randomName();
     }
     app = await createApp(testConfig);
+    db = new DB(testConfig);
+    await db.initialized;
+
+    testAdmin = await createAdminUser(db);  
+    const loginRes = await request(app).put('/api/auth').send(testAdmin);
+    testAdminAuthToken = loginRes.body.token;
+    testAdminId = loginRes.body.user.id;
+
+    const newMenuItem = { title:"test", description: "yummy", image:"pizza4.png", price: 0.0002 };
+    itemRes = await request(app).put('/api/order/menu').auth(testAdminAuthToken, { type: 'bearer' }).send(newMenuItem);
+    console.log(itemRes.body);
+    const newFranchise = { name: 'new franchise', admins: [{email: testAdmin.email}] };
+    const createRes = await request(app).post('/api/franchise').auth(testAdminAuthToken, { type: 'bearer' }).send(newFranchise);
+    franchiseId = createRes.body.id;
+    const newStore = { franchiseId: franchiseId, name: 'new store'};
+    const storeRes = await request(app).post(`/api/franchise/${franchiseId}/store`).auth(testAdminAuthToken, { type: 'bearer' }).send(newStore);
+    newOrder = {franchiseId: franchiseId, storeId: storeRes.body.id, items:itemRes.body};
+
+
+
+      
   
 });
 
@@ -25,13 +52,31 @@ afterEach(async () => {
 
 });
 
-test('Get Pizza Menu', async () => {
+// test('create order', async () => {
+//     const orderRes = await request(app).post('/api/order').auth(testAdminAuthToken, { type: 'bearer' }).send(newOrder);
+//     console.log(orderRes.body);
+//     expect(orderRes.status).toBe(200);
+//     expect(orderRes.body).toEqual({order: newOrder, jwt: expect.anything()});
+
+
+// });
+
+
+test('get pizza menu', async () => {
     const listRes = await request(app).get('/api/order/menu');
     expect(listRes.status).toBe(200);
-    console.log(listRes.body);
+    expect(listRes.body).toEqual(itemRes.body);
 
 });
 
 function randomName() { 
   return Math.random().toString(36).substring(2, 12);
+  }
+  async function createAdminUser(db) {
+    let user = { password: 'toomanysecrets', roles: [{ role: Role.Admin }] };
+    user.name = randomName();
+    user.email = user.name + '@admin.com';
+  
+    user = await db.addUser(user);
+    return { ...user, password: 'toomanysecrets' };
   }
