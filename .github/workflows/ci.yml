@@ -81,7 +81,9 @@ jobs:
       
 
       - name: Tests
-        run: npm test
+        env:
+          NODE_ENV: test
+        run: NODE_ENV=test CONFIG_FILE=src/test.config.js npm test
 
       - name: set version
         id: set_version
