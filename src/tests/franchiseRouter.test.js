@@ -1,5 +1,4 @@
 const request = require('supertest');
-const e = require('express');
 const testConfig = require('../test.config');
 const createApp  = require('../service');
 const { Role, DB } = require('../database/database.js');
@@ -10,7 +9,6 @@ let app;
 let db;
 let testAdmin;
 let testAdminAuthToken;
-let testAdminId;
 let createRes;
 // const { Role, DB } = require('../database/database.js');
 
@@ -26,7 +24,6 @@ beforeAll(async () => {
     testAdmin = await createAdminUser(db);  
     const loginRes = await request(app).put('/api/auth').send(testAdmin);
     testAdminAuthToken = loginRes.body.token;
-    testAdminId = loginRes.body.user.id;
   
 
     //create franchise  
@@ -101,7 +98,7 @@ test('list user franchises', async () => {
 });
 
 
-generateNewEmail = () => {  
+const generateNewEmail = () => {  
     return Math.random().toString(36).substring(2, 12) + '@test.com';
   }
 

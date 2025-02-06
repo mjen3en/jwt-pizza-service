@@ -1,5 +1,4 @@
 const request = require('supertest');
-const e = require('express');
 const testConfig = require('../test.config');
 const createApp  = require('../service');
 const { Role, DB } = require('../database/database.js');
@@ -7,11 +6,9 @@ const { Role, DB } = require('../database/database.js');
 let app;
 let testAdmin;
 let testAdminAuthToken;
-let testAdminId;
 let db;
 let itemRes;
 let franchiseId;
-let newOrder;
 
 beforeAll(async () => {
 
@@ -35,7 +32,7 @@ beforeAll(async () => {
     franchiseId = createRes.body.id;
     const newStore = { franchiseId: franchiseId, name: 'new store'};
     const storeRes = await request(app).post(`/api/franchise/${franchiseId}/store`).auth(testAdminAuthToken, { type: 'bearer' }).send(newStore);
-    newOrder = {franchiseId: franchiseId, storeId: storeRes.body.id, items:itemRes.body};
+    console.log(storeRes.body);
 
 
 
