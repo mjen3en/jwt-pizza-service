@@ -7,10 +7,10 @@ export default [
   {files: ["**/*.js"], languageOptions: {sourceType: "commonjs"}},
   {languageOptions: { globals: globals.node }},
   pluginJs.configs.recommended,
+  module.exports = {
+    env: {
+      jest: true
+    }
+  }
 ];
 
-module.exports = {
-  env: {
-    jest: true
-  }
-}
