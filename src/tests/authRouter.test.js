@@ -10,6 +10,7 @@ beforeAll(async () => {
 
   if (!testConfig.db.connection.database){
     testConfig.db.connection.database = randomName();
+    console.log('Database:', testConfig.db.connection.database);
   }
   app = await createApp(testConfig);
 
