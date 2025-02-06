@@ -4,7 +4,6 @@ const testConfig = require('../test.config');
 const createApp  = require('../service');
 const { Role, DB } = require('../database/database.js');
 
-const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let testUserAuthToken;
 let testUserId;
 let app;
@@ -36,14 +35,6 @@ beforeAll(async () => {
     console.log(createRes.body);  
     
   });
-
-beforeEach(async () => {
-
-});
-
-afterEach(async () => {
-
-});
 
 test('create franchise store', async () => {
     const newStore = { franchiseId: createRes.body.id, name: 'new store'};

@@ -4,7 +4,6 @@ const testConfig = require('../test.config');
 const createApp  = require('../service');
 const { Role, DB } = require('../database/database.js');
 
-const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
 let app;
 let testAdmin;
 let testAdminAuthToken;
@@ -44,13 +43,6 @@ beforeAll(async () => {
   
 });
 
-beforeEach(async () => {
-
-});
-
-afterEach(async () => {
-
-});
 
 // test('create order', async () => {
 //     const orderRes = await request(app).post('/api/order').auth(testAdminAuthToken, { type: 'bearer' }).send(newOrder);
