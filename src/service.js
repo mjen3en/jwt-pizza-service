@@ -6,6 +6,7 @@ const {
 } = require("./routes/franchiseRouter.js");
 const version = require("./version.json");
 const { DB } = require("./database/database.js");
+const metrics = require("../metrics.js");
 
 async function createApp(config) {
   const app = express();
@@ -13,6 +14,7 @@ async function createApp(config) {
   await db.initialized;
   app.use(express.json());
   app.use((req, res, next) => setAuthUser(db, req, res, next));
+  app.use((req, res, next) => metrics.track(req, res, next));
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", req.headers.origin || "*");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE");

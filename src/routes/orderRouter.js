@@ -1,6 +1,7 @@
 const express = require('express');
 const { Role } = require('../database/database.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
+const metrics = require("../../metrics.js");
 
 function createOrderRouter(db, authRouter, config){
 
@@ -86,8 +87,12 @@ orderRouter.post(
     });
     const j = await r.json();
     if (r.ok) {
+      // METRICS Pizza created successfully
+      // METRICS Revenue per minute
+      // METRICS Pizza latency
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
     } else {
+      // METRICS Pizza creation failed
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportPizzaCreationErrorToPizzaFactoryUrl: j.reportUrl });
     }
   })

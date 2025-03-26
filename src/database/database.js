@@ -62,7 +62,10 @@ class DB {
       const userResult = await this.query(connection, `SELECT * FROM user WHERE email=?`, [email]);
       const user = userResult[0];
       if (!user || !(await bcrypt.compare(password, user.password))) {
+        // METRICS authentication failure
         throw new StatusCodeError('unknown user', 404);
+      } else{
+        // METRICS authentication success
       }
 
       const roleResult = await this.query(connection, `SELECT * FROM userRole WHERE userId=?`, [user.id]);
