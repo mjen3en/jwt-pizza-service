@@ -1,7 +1,6 @@
 const express = require('express');
 const { Role } = require('../database/database.js');
 const { StatusCodeError, asyncHandler } = require('../endpointHelper.js');
-const metrics = require("../../metrics.js");
 
 function createFranchiseRouter(db, authRouter) {
 

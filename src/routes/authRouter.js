@@ -3,7 +3,6 @@ const jwt = require("jsonwebtoken");
 const config = require("../config.js");
 const { asyncHandler } = require("../endpointHelper.js");
 const { Role } = require("../database/database.js");
-const metrics = require("../../metrics.js");
 
 async function setAuthUser(db, req, res, next) {
   const token = readAuthToken(req);
