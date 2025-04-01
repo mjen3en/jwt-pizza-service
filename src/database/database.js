@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt');
 const { StatusCodeError } = require('../endpointHelper.js');
 const { Role } = require('../model/model.js');
 const dbModel = require('./dbModel.js');
+const logger = require('../../logging.js')
+
 class DB {
   constructor(config) {
     this.config = config;
@@ -14,6 +16,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       const rows = await this.query(connection, `SELECT * FROM menu`);
+      logger.dblog('info', 'select');
       return rows;
     } finally {
       connection.end();
@@ -24,6 +27,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       const addResult = await this.query(connection, `INSERT INTO menu (title, description, image, price) VALUES (?, ?, ?, ?)`, [item.title, item.description, item.image, item.price]);
+      logger.dblog('info', 'insert');
       return { ...item, id: addResult.insertId };
     } finally {
       connection.end();
@@ -42,10 +46,12 @@ class DB {
           case Role.Franchisee: {
             const franchiseId = await this.getID(connection, 'name', role.object, 'franchise');
             await this.query(connection, `INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`, [userId, role.role, franchiseId]);
+            logger.dblog('info', 'insert');
             break;
           }
           default: {
             await this.query(connection, `INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`, [userId, role.role, 0]);
+            logger.dblog('info', 'insert');
             break;
           }
         }
@@ -60,6 +66,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       const userResult = await this.query(connection, `SELECT * FROM user WHERE email=?`, [email]);
+      logger.dblog('info', 'select');
       const user = userResult[0];
       if (!user || !(await bcrypt.compare(password, user.password))) {
         // METRICS authentication failure
@@ -69,6 +76,7 @@ class DB {
       }
 
       const roleResult = await this.query(connection, `SELECT * FROM userRole WHERE userId=?`, [user.id]);
+      logger.dblog('info', 'select');
       const roles = roleResult.map((r) => {
         return { objectId: r.objectId || undefined, role: r.role };
       });
@@ -92,6 +100,7 @@ class DB {
       }
       if (params.length > 0) {
         const query = `UPDATE user SET ${params.join(', ')} WHERE id=${userId}`;
+        logger.dblog('info', 'update');
         await this.query(connection, query);
       }
       return this.getUser(email, password);
@@ -105,6 +114,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       await this.query(connection, `INSERT INTO auth (token, userId) VALUES (?, ?)`, [token, userId]);
+      logger.dblog('info', 'insert');
     } finally {
       connection.end();
     }
@@ -115,6 +125,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       const authResult = await this.query(connection, `SELECT userId FROM auth WHERE token=?`, [token]);
+      logger.dblog('info', 'select');
       return authResult.length > 0;
     } finally {
       connection.end();
@@ -126,6 +137,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       await this.query(connection, `DELETE FROM auth WHERE token=?`, [token]);
+      logger.dblog('info', 'delete');
     } finally {
       connection.end();
     }
@@ -139,6 +151,7 @@ class DB {
       for (const order of orders) {
         let items = await this.query(connection, `SELECT id, menuId, description, price FROM orderItem WHERE orderId=?`, [order.id]);
         order.items = items;
+        logger.dblog('info', 'select');
       }
       return { dinerId: user.id, orders: orders, page };
     } finally {
@@ -154,6 +167,7 @@ class DB {
       for (const item of order.items) {
         const menuId = await this.getID(connection, 'id', item.menuId, 'menu');
         await this.query(connection, `INSERT INTO orderItem (orderId, menuId, description, price) VALUES (?, ?, ?, ?)`, [orderId, menuId, item.description, item.price]);
+        logger.dblog('info', 'insert');
       }
       return { ...order, id: orderId };
     } finally {
@@ -166,6 +180,7 @@ class DB {
     try {
       for (const admin of franchise.admins) {
         const adminUser = await this.query(connection, `SELECT id, name FROM user WHERE email=?`, [admin.email]);
+        logger.dblog('info', 'select');
         if (adminUser.length == 0) {
           throw new StatusCodeError(`unknown user for franchise admin ${admin.email} provided`, 404);
         }
@@ -174,10 +189,12 @@ class DB {
       }
 
       const franchiseResult = await this.query(connection, `INSERT INTO franchise (name) VALUES (?)`, [franchise.name]);
+      logger.dblog('info', 'insert');
       franchise.id = franchiseResult.insertId;
 
       for (const admin of franchise.admins) {
         await this.query(connection, `INSERT INTO userRole (userId, role, objectId) VALUES (?, ?, ?)`, [admin.id, Role.Franchisee, franchise.id]);
+        logger.dblog('info', 'insert');
       }
 
       return franchise;
@@ -194,6 +211,7 @@ class DB {
         await this.query(connection, `DELETE FROM store WHERE franchiseId=?`, [franchiseId]);
         await this.query(connection, `DELETE FROM userRole WHERE objectId=?`, [franchiseId]);
         await this.query(connection, `DELETE FROM franchise WHERE id=?`, [franchiseId]);
+        logger.dblog('info', 'delete');
         await connection.commit();
       } catch {
         await connection.rollback();
@@ -208,11 +226,13 @@ class DB {
     const connection = await this.getConnection();
     try {
       const franchises = await this.query(connection, `SELECT id, name FROM franchise`);
+      logger.dblog('info', 'select');
       for (const franchise of franchises) {
         if (authUser?.isRole(Role.Admin)) {
           await this.getFranchise(franchise);
         } else {
           franchise.stores = await this.query(connection, `SELECT id, name FROM store WHERE franchiseId=?`, [franchise.id]);
+          logger.dblog('info', 'select');
         }
       }
       return franchises;
@@ -225,12 +245,14 @@ class DB {
     const connection = await this.getConnection();
     try {
       let franchiseIds = await this.query(connection, `SELECT objectId FROM userRole WHERE role='franchisee' AND userId=?`, [userId]);
+      logger.dblog('info', 'select');
       if (franchiseIds.length === 0) {
         return [];
       }
 
       franchiseIds = franchiseIds.map((v) => v.objectId);
       const franchises = await this.query(connection, `SELECT id, name FROM franchise WHERE id in (${franchiseIds.join(',')})`);
+      logger.dblog('info', 'select');
       for (const franchise of franchises) {
         await this.getFranchise(franchise);
       }
@@ -244,12 +266,13 @@ class DB {
     const connection = await this.getConnection();
     try {
       franchise.admins = await this.query(connection, `SELECT u.id, u.name, u.email FROM userRole AS ur JOIN user AS u ON u.id=ur.userId WHERE ur.objectId=? AND ur.role='franchisee'`, [franchise.id]);
-
+      logger.dblog('info', 'select');
       franchise.stores = await this.query(
         connection,
         `SELECT s.id, s.name, COALESCE(SUM(oi.price), 0) AS totalRevenue FROM dinerOrder AS do JOIN orderItem AS oi ON do.id=oi.orderId RIGHT JOIN store AS s ON s.id=do.storeId WHERE s.franchiseId=? GROUP BY s.id`,
         [franchise.id]
       );
+      logger.dblog('info', 'select');
 
       return franchise;
     } finally {
@@ -261,6 +284,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       const insertResult = await this.query(connection, `INSERT INTO store (franchiseId, name) VALUES (?, ?)`, [franchiseId, store.name]);
+      logger.dblog('info', 'insert');
       return { id: insertResult.insertId, franchiseId, name: store.name };
     } finally {
       connection.end();
@@ -271,6 +295,7 @@ class DB {
     const connection = await this.getConnection();
     try {
       await this.query(connection, `DELETE FROM store WHERE franchiseId=? AND id=?`, [franchiseId, storeId]);
+      logger.dblog('info', 'delete');
     } finally {
       connection.end();
     }

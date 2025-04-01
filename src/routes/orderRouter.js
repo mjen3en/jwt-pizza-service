@@ -1,7 +1,7 @@
 const express = require('express');
 const { Role } = require('../database/database.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
-//comment
+const logger = require('../../logging.js');
 
 function createOrderRouter(db, authRouter, config){
 
@@ -85,11 +85,14 @@ orderRouter.post(
       headers: { 'Content-Type': 'application/json', authorization: `Bearer ${config.factory.apiKey}` },
       body: JSON.stringify({ diner: { id: req.user.id, name: req.user.name, email: req.user.email }, order }),
     });
+
+    
     const j = await r.json();
     if (r.ok) {
       // METRICS Pizza created successfully
       // METRICS Revenue per minute
       // METRICS Pizza latency
+      logger.httpLogger(req,res,next);
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
     } else {
       // METRICS Pizza creation failed
