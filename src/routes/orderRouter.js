@@ -92,7 +92,7 @@ orderRouter.post(
       // METRICS Pizza created successfully
       // METRICS Revenue per minute
       // METRICS Pizza latency
-      logger.httpLogger(req,res,next);
+      logger.httpLogger(req,res);
       res.send({ order, reportSlowPizzaToFactoryUrl: j.reportUrl, jwt: j.jwt });
     } else {
       // METRICS Pizza creation failed
