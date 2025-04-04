@@ -219,14 +219,14 @@ getMemoryUsagePercentage() {
       .then((response) => {
         if (!response.ok) {
           response.text().then((text) => {
-            console.error(`Failed to push metrics data to Grafana: ${text}\n`);
+            // console.error(`Failed to push metrics data to Grafana: ${text}\n`);
           });
         } else {
-          console.log(`Pushed ${metricName}`);
+          // console.log(`Pushed ${metricName}`);
         }
       })
       .catch((error) => {
-        console.error("Error pushing metrics:", error);
+        // console.error("Error pushing metrics:", error);
       });
   }
 }

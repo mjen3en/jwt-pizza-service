@@ -61,8 +61,8 @@ class Logger {
         Authorization: `Bearer ${config.logging.apiKey}`,
       },
     }).then((res) => {
-      if (!res.ok) console.log('Failed to send log to Grafana');
-      if (res.ok) console.log('Log sent to Grafana');
+      // if (!res.ok) console.log('Failed to send log to Grafana');
+      // if (res.ok) console.log('Log sent to Grafana');
     });
   }
 }
