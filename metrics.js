@@ -212,12 +212,24 @@ getMemoryUsagePercentage() {
       method: "POST",
       body: JSON.stringify(metric),
       headers: {
-        Authorization: `Bearer ${config.metrics.apiKey}`,
+        Authorization: `Bearer ${config.metrics.userId}:${config.metrics.apiKey}`,
         "Content-Type": "application/json",
       },
     })
+    .then((response) => {
+      if (!response.ok) {
+        response.text().then((text) => {
+          console.error(`Failed to push metrics data to Grafana: ${text}\n`);
+        });
       }
+    })
+    .catch((error) => {
+      console.error("Error pushing metrics:", error);
+    });
+  
 }
+}
+
 
 const metrics = new Metrics();
 module.exports = metrics;

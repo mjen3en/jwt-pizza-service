@@ -60,8 +60,10 @@ class Logger {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${config.logging.userId}:${config.logging.apiKey}`,
       },
-    })
+    }).then((res) => {
+      if (!res.ok) console.log('Failed to send log to Grafana');
+    });
   }
 }
-
+  
 module.exports = new Logger();
