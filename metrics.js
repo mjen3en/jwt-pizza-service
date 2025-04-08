@@ -212,7 +212,7 @@ getMemoryUsagePercentage() {
       method: "POST",
       body: JSON.stringify(metric),
       headers: {
-        Authorization: `Bearer ${config.metrics.userId}:${config.metrics.apiKey}`,
+        Authorization: `Bearer ${config.metrics.apiKey}`,
         "Content-Type": "application/json",
       },
     })
